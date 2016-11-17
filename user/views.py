@@ -26,4 +26,3 @@ def register():
         user.save()
         return "User Registered"
     return render_template('user/register.html', form=form)
-        
