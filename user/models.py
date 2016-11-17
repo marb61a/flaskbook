@@ -7,3 +7,8 @@ class User(db.Document):
     first_name = db.StringField(db_field="fn", max_length=50)
     last_name = db.StringField(db_field="ln", max_length=50)
     created = db.IntField(db_field="c", default=now())
+    
+    meta = {
+        'indexes': ['username', 'email', '-created']
+    }
+    
