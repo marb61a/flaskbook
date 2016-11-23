@@ -12,7 +12,7 @@ def login():
 
 @user_app.route('/register', methods=('GET','POST'))
 def register():
-    form = RegisterForm
+    form = RegisterForm()
     if form.validate_on_submit():
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(form.password.data, salt)
