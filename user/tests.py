@@ -24,13 +24,13 @@ class UserTest(unittest.TestCase):
     def test_register_user(self):
         # basic registration
         rv = self.app.post('/register', data=dict(
-            first_name="Joe",
-            last_name="Bloggs",
+            first_name="joe",
+            last_name="bloggs",
             username="joebloggs",
-            email="joe@example.com",
+            email="joebloggs@example.com",
             password="abcd1234",
             confirm="abcd1234"
             ), follow_redirects=True)
-        assert User.objects.filter(username='joebloggs').count() == 1
+        assert User.objects.filter(username="joebloggs").count() == 1
         
         
