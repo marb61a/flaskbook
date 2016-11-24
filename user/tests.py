@@ -21,16 +21,31 @@ class UserTest(unittest.TestCase):
         db = _get_db()
         db.client.drop_database(db)
         
-    def test_register_user(self):
-        # basic registration
-        rv = self.app.post('/register', data=dict(
+    def user_dict(self):
+        return dict(
             first_name="joe",
             last_name="bloggs",
             username="joebloggs",
             email="joebloggs@example.com",
             password="abcd1234",
             confirm="abcd1234"
-            ), follow_redirects=True)
+            )
+        
+    def test_register_user(self):
+        # basic registration
+        rv = self.app.post('/register', data=self.user_dict(), follow_redirects=True)
         assert User.objects.filter(username="joebloggs").count() == 1
         
+    def test_login_user(self):
+        # create user
+        self.app.post('/register', data = self.user_dict())
+        # login user
+        rv = self.app.post('/login', data=dict(
+            username=self.user_dict()['username'],
+            password=self.user_dict()['password']
+            ))
+        # check the session is set
+        with self.app as c:
+                rv = c.get('/')
+                assert session.get('username') == self.user_dict()['username']
         

@@ -31,3 +31,13 @@ class RegisterForm(Form):
     def validate_email(form, field):
         if User.objects.filter(email=field.data).first():
             raise ValidationError("Email is already in use")
+            
+class LoginForm(Form):
+    username = StringField('Username', [
+        validators.Required(),
+        validators.length(min=4, max=25)
+        ])
+    password = PasswordField('New Password', [
+        validators.Required(),
+        validators.length(min=4, max=80)
+        ])
