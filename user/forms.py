@@ -1,7 +1,9 @@
 from flask_wtf import Form
 from wtforms import validators, StringField, PasswordField
+from wtforms.widgets import TextArea
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import ValidationError
+import re
 
 from user.models import User
 
