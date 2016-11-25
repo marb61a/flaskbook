@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, session
+from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import bcrypt
 
 from user.models import User
-from user.forms import RegisterForm, LoginForm
+from user.forms import RegisterForm, LoginForm, EditForm
 
 user_app = Blueprint('user_app', __name__)
 
@@ -23,6 +23,7 @@ def register():
         user.save()
         return "User Registered"
     return render_template('user/register.html', form=form)
+    
     
 @user_app.route('/login', methods=('GET','POST'))
 def login():
@@ -50,4 +51,21 @@ def login():
         if not user:
             error = 'Incorrect Credentials'
     return render_template('user/login.html', form=form, error=error)
-        
+
+
+@user_app.route('/logout', methods=('GET','POST'))  
+def logout():
+    session.pop('username')
+    return redirect(url_for('user_app.login'))
+    
+
+@user_app.route('/<username>', methods=('GET','POST'))
+def profile(username):
+    edit_profile = False
+    user = User.objects.filter(username=username).first()
+    if session.get('username') and user.username == session.get('username'):
+        edit_profile = True
+    if user:
+        return render_template('user/profile.html', user=user, edit_profile=edit_profile)
+    else:
+        abort(404)
