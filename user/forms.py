@@ -7,7 +7,7 @@ import re
 
 from user.models import User
 
-class RegisterForm(Form):
+class BaseUserForm(Form):
     first_name = StringField('First Name', [validators.Required()])
     last_name = StringField('Last Name', [validators.Required()])
     email = EmailField('Email address', [
@@ -19,6 +19,13 @@ class RegisterForm(Form):
         validators.Required(),
         validators.length(min=4, max=25)
         ])
+    bio = StringField('Bio',
+        widget=TextArea(),
+        validators=[validators.Length(max=160)]
+    )
+    
+
+class RegisterForm(BaseUserForm):
     password = PasswordField('New Password', [
         validators.Required(),
         validators.EqualTo('confirm', message='Passwords must match'),
@@ -29,6 +36,8 @@ class RegisterForm(Form):
     def validate_username(form, field):
         if User.objects.filter(username=field.data).first():
             raise ValidationError("Username already exists")
+        if not re.match("^[a-zA-Z0-9_-]{4,25}$", field.data):
+            raise ValidationError("Invalid username")
     
     def validate_email(form, field):
         if User.objects.filter(email=field.data).first():
@@ -43,3 +52,6 @@ class LoginForm(Form):
         validators.Required(),
         validators.length(min=4, max=80)
         ])
+
+class EditForm(BaseUserForm):
+    pass
