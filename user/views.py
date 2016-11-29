@@ -94,6 +94,6 @@ def edit():
                 form.populate_obj(user)
                 user.save()
                 message = "Profile updated"
-    return render_template("user/edit.html", form=form, error=error, message=message)        
+        return render_template("user/edit.html", form=form, error=error, message=message)        
     else:
         abort(404)
