@@ -82,3 +82,35 @@ class UserTest(unittest.TestCase):
         user['username'] = "TestUsername"
         user['email'] = "Test@Example.com"
         
+        # edit user
+        rv = self.app.post('/edit', data=user)
+        assert "Profile updated" in str(rv.data)
+        edited_user = User.objects.first()
+        assert edited_user.first_name == "Test First"
+        assert edited_user.last_name == "Test Last"
+        assert edited_user.username == "testusername"
+        assert edited_user.email == "test@example.com"
+        
+        # create a second user
+        self.app.post('/register', data = self.user_dict())
+        # login user
+        rv = self.app.post('/login', data=dict(
+            username=self.user_dict()['username'],
+            password=self.user_dict()['password']
+            ))
+            
+        # try to save same email address
+        user = self.user_dict()
+        user['email'] = "test@example.com"
+        rv = self.app.post('/edit', data=user)
+        assert "Email already exists" in str(rv.data)
+        
+        # try to save same username
+        user = self.user_dict()
+        user['username'] = "TestUsername"
+        rv = self.app.post('/edit', data=user)
+        assert "Username already exists" in str(rv.data)
+        
+        
+        
+        
