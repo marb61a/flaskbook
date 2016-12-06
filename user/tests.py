@@ -10,7 +10,8 @@ class UserTest(unittest.TestCase):
         return create_app_base(
             MONGODB_SETTINGS={'DB': self.db_name},
             TESTING=True,
-            WTF_CSRF_ENABLED=False
+            WTF_CSRF_ENABLED=False,
+            SECRET_KEY=''
             )
             
     def setUp(self):
@@ -49,6 +50,21 @@ class UserTest(unittest.TestCase):
         user2['email'] = "test2@example.com"
         rv = self.app.post('/register', data=user3, follow_redirects=True)
         assert User.objects.filter(username=user3['username'].lower()).count() == 1
+        
+        # Confirm the user
+        user = User.objects.get(username=self.user_dict()['username'])
+        code = user.change_configuration.get('confirmation_code')
+        rv = self.app.get('/confirm/' + user.username + '/' + code)
+        assert "Your email has been confirmed" in str(rv.data)
+        
+        # Try again to confirm
+        rv = self.app.get('/confirm/' + user.username + '/' + code)
+        assert rv.status_code == 404
+        
+        # Check change configuration is empty
+        user = User.objects.get(username=self.user_dict()['username'])
+        assert user.change_configuration == {}
+        
         
     def test_login_user(self):
         # create user
@@ -90,6 +106,15 @@ class UserTest(unittest.TestCase):
         assert edited_user.last_name == "Test Last"
         assert edited_user.username == "testusername"
         assert edited_user.email == "test@example.com"
+        
+        # Check new mail is in the change configuration
+        user['email'] = "test@example.com"
+        rv = self.app.post('/edit', data=user)
+        assert "You will need to confirm the new email to complete this change" in str(rv.data)
+        db_user = User.objects.first()
+        code = db_user.change_configuration.get('confirmation_code')
+        new_email = db_user.change_configuration.get('new_email')
+        assert new_email == user['email']
         
         # create a second user
         self.app.post('/register', data = self.user_dict())
