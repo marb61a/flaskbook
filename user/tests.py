@@ -136,6 +136,30 @@ class UserTest(unittest.TestCase):
         rv = self.app.post('/edit', data=user)
         assert "Username already exists" in str(rv.data)
         
+    def test_get_profile(self):
+        # create user
+        self.app.post('/register', data=self.user_dict())
         
+        # get the user's profile
+        rv = self.app.get('/' + self.user_dict()['username'])
+        assert self.user_dict()['username'] in str(rv.data)
         
+        # get a 404
+        rv = self.app.get('/noexist')
+        assert rv.status_code == 404
+        
+    def test_forgot_password(self):
+        # create user
+        self.app.post('/register', data=self.user_dict())
+        
+        # confirm user
+        user = User.objects.get(username=self.user_dict()['username'])
+        code = user.change_configuration.get('confirmation_code')
+        rv = self.app.get('/confirm/' + user.username + '/' + code)
+        
+        # enter user forgot email
+        rv = self.app.post('/forgot', data=dict(email=self.user_dict().get('email')))
+        user = User.objects.first()
+        password_reset_code = user.change_configuration.get('password_reset_code')
+        assert password_reset_code is not None
         
