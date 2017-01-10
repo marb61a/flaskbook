@@ -18,7 +18,7 @@ def thumbnail_process(file, content_type, content_id, sizes=[("sm", 50), ("lg", 
     for(name, size) in sizes:
         with Image(filename=file) as img:
             crop_center(img)
-            image.sample(size, size)
+            img.sample(size, size)
             img.format('png')
             img.save(filename=os.path.join(UPLOAD_FOLDER, content_type, filename_template % (image_id, 'raw')))
             
