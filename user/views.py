@@ -191,8 +191,7 @@ def password_reset_complete():
 def change_password():
     require_current = True
     error = None
-    form = PasswordResetForm
-    
+    form = PasswordResetForm()
     user = User.objects.filter(username=session.get('username')).first()
     
     if not user:
@@ -215,4 +214,5 @@ def change_password():
         form=form,
         require_current=require_current,
         error=error
-        
+    
+)

@@ -1,6 +1,7 @@
 from application import create_app as create_app_base
 from mongoengine.connection import _get_db
 import unittest
+from flask import session
 
 from user.models import User
 
@@ -65,15 +66,16 @@ class UserTest(unittest.TestCase):
         user = User.objects.get(username=self.user_dict()['username'])
         assert user.change_configuration == {}
         
-        
     def test_login_user(self):
         # create user
         self.app.post('/register', data = self.user_dict())
+        
         # login user
         rv = self.app.post('/login', data=dict(
             username=self.user_dict()['username'],
             password=self.user_dict()['password']
             ))
+            
         # check the session is set
         with self.app as c:
                 rv = c.get('/')
@@ -82,11 +84,18 @@ class UserTest(unittest.TestCase):
     def test_edit_profile(self):
         # create user
         self.app.post('/register', data = self.user_dict())
+        
+        # confirm the user
+        user = User.objects.get(username=self.user_dict()['username'])
+        code = user.change_configuration.get('confirmation_code')
+        rv = self.app.get('/confirm/' + user.username + '/' + code)
+        
         # login user
         rv = self.app.post('/login', data=dict(
             username=self.user_dict()['username'],
             password=self.user_dict()['password']
             ))
+            
         # check user has edit button on their own profile
         rv = self.app.get('/', self.user_dict()['username'])
         assert "Edit profile" in str(rv.data)
@@ -118,6 +127,7 @@ class UserTest(unittest.TestCase):
         
         # create a second user
         self.app.post('/register', data = self.user_dict())
+        
         # login user
         rv = self.app.post('/login', data=dict(
             username=self.user_dict()['username'],
@@ -162,4 +172,34 @@ class UserTest(unittest.TestCase):
         user = User.objects.first()
         password_reset_code = user.change_configuration.get('password_reset_code')
         assert password_reset_code is not None
+        
+        # try wrong username
+        rv = self.app.get('/password_reset/not_there/' + password_reset_code)
+        assert rv.status_code == 404
+        
+        # try wrong password reset code
+        rv = self.app.get('/password_reset/' + self.user_dict().get('username') + '/bad-code')
+        assert rv.status_code == 404
+        
+        # try correct passwordreset code
+        rv = self.app.post('/password_reset/' + self.user_dict().get('username') + '/' + password_reset_code,
+        data=dict(password='newpassword', confirm='newpassword'), follow_redirects=True)
+        assert "Your Password has been updated" in str(rv.data)
+        user = User.objects.first()
+        assert user.change_configuration == {}
+        
+        # Try to log in with new password
+        rv = self.app.post('/login', data=dict(
+            username=self.user_dict()['username'],
+            password='newpassword'
+            ))
+        
+        # check the session is set
+        with self.app as c:
+                rv = c.get('/')
+                assert session.get('username') == self.user_dict()['username']
+        
+    def test_change_password(self):
+        # create a user
+        self.app.post('/register', data=self.user_dict())
         
