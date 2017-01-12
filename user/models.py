@@ -4,7 +4,7 @@ import os
 
 from application import db
 from utilities.common import utc_now_ts as now
-from settings import STATIC_IMAGE_URL
+from settings import STATIC_IMAGE_URL, AWS_BUCKET, AWS_CONTENT_URL
 
 class User(db.Document):
     username = db.StringField(db_field="u", required=True, unique=True)
