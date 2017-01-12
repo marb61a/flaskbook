@@ -63,12 +63,12 @@ class EditForm(BaseUserForm):
     
     
 class ForgotForm(Form):
-    email = EmailField('Email Address', 
-        [validators.DataRequired(), validators.Email ]
+    email = EmailField('Email address',
+        [validators.DataRequired(), validators.Email()]
     )
     
-
 class PasswordResetForm(PasswordBaseForm):
     current_password = PasswordField('Current Password',
-        [validators.DataRequired(), validators.Length(min=4, max=80)]
+        [validators.DataRequired(),
+        validators.Length(min=4, max=80)]
     )
