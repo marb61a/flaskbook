@@ -14,7 +14,6 @@ from user.decorators import login_required
 
 user_app = Blueprint('user_app', __name__)
 
-
 @user_app.route('/register', methods=('GET','POST'))
 def register():
     form = RegisterForm()
@@ -43,7 +42,6 @@ def register():
         return "User Registered"
     return render_template('user/register.html', form=form)
     
-    
 @user_app.route('/login', methods=('GET','POST'))
 def login():
     form = LoginForm()
@@ -71,26 +69,28 @@ def login():
             error = 'Incorrect Credentials'
     return render_template('user/login.html', form=form, error=error)
 
-
 @user_app.route('/logout', methods=('GET','POST'))  
 def logout():
     session.pop('username')
     return redirect(url_for('user_app.login'))
     
-
 @user_app.route('/<username>', methods=('GET','POST'))
 def profile(username):
     edit_profile = False
+    rel = None
     user = User.objects.filter(username=username).first()
     if session.get('username') and user.username == session.get('username'):
         edit_profile = True
     if user:
+        if session.get('username'):
+            logged_user = User.objects.filter(username=session.get('username')).first()
+            rel = Relationship.get_relationship(logged_user, user)
         return render_template('user/profile.html', user=user, edit_profile=edit_profile)
     else:
         abort(404)
         
-
 @user_app.route('/edit', methods=('GET','POST'))
+@login_required
 def edit():
     error = None
     message = None
@@ -98,6 +98,13 @@ def edit():
     if user:
         form = EditForm(obj=user)
         if form.validate_on_submit():
+            # Check if image 
+            image_ts = None
+            if request.files.get('image'):
+                filename = secure_filename(form.image.data.filename)
+                file_path = os.path.join(UPLOAD_FOLDER, 'user', filename)
+                form.image.data.save(file_path)
+                image_ts = str(thumbnail_process(file_path, 'user', str(user.id)))
             if user.username != form.username.data:
                 if User.objects.filter(username=form.username.data.lower()).first():
                     error = "Username already exists"
@@ -121,11 +128,15 @@ def edit():
                     body_html = render_template('mail/user/change_email.html', user=user)
                     body_text = render_template('mail/user/change_email.txt', user=user)
                     email(user.change_configuration['new_email'], "Confirm your new email", body_html, body_text)
+                    
             if not error:
                 form.populate_obj(user)
+                if image_ts:
+                    user.profile_image = image.ts
                 user.save()
                 if not message:
                     message = "Profile Updated"
+                    
         return render_template("user/edit.html", form=form, error=error, message=message)        
     else:
         abort(404)
@@ -161,6 +172,7 @@ def forgot():
             body_html = render_template('mail/user/password_reset.html', user=user)
             body_text = render_template('mail/user/password_reset.txt', user=user)
             email(user.email, "Password reset request", body_html, body_text)
+            
         message = "You will receive a password reset email if we find that email in our system"
     return render_template('user/forgot.html', form=form, error=error, message=message)
     

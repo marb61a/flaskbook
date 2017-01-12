@@ -213,3 +213,22 @@ class UserTest(unittest.TestCase):
             username=self.user_dict()['username'],
             password=self.user_dict()['password']
             ))
+        
+        # Change the password
+        rv = self.app.post('/change_password', data=dict(
+            current_password==self.user_dict()['password'],
+            password="newpassword",
+            confirm="newpassword"
+        ), follow_redirects=True)
+        
+        # Try to log in with a new password
+        rv = self.app.post('/login', data=dict(
+            username=self.user_dict()['username'],
+            password='newpassword'
+            ))
+        
+        # Check the session is set
+        with self.app as c:
+                rv = c.get('/')
+                assert session.get('username') == self.user_dict()['username']
+        
