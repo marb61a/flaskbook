@@ -20,9 +20,32 @@
                                 Edit profile
                             </a>
                         {% else %}
-                            <button type="button" class="btn btn-success">
-                                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Friends
-                            </button>
+                            {% if rel == None %}
+                                <a href="{{ url_for('relationship_app.add_friend', to_username=user.username) }}" role="button" id="relationship-add-friend" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Friend
+                                </a>  
+                                <a href="{{ url_for('relationship_app.block', to_username=user.username) }}" role="button" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Block
+                                </a>
+                            {% endif %}
+                            {if rel == "BLOCKED"}
+                                <a>
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                    <span id="relationship-label">Blocked</span>
+                                </a>
+                            {% endif %}
+                            {% if rel == "FRIENDS_APPROVED" %}
+                                <a href="{{ url_for('relationship_app.remove_friend', to_username=user.username) }}" role="button" id="relationship-friends" class="btn btn-primary">
+                                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 
+                                    <span id="relationship-label">Friends</span>
+                                </a>
+                            {% endif %}
+                            {% if rel == "FRIENDS_PENDING" %}
+                                <a href="{{ url_for('relationship_app.remove_friend', to_username=user.username) }}" role="button" id="relationship-friends-requested" class="btn btn-primary">
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span> 
+                                    <span id="relationship-label">Friendship Requested</span>
+                                </a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
