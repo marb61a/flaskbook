@@ -28,8 +28,16 @@ class Relationship(db.Document):
     req_date = db.IntField(db_field='rd', default=now())
     approved_date = db.IntField(db_field="ad", default=0)
     
+    def is_friend(self, user):
+        if user:
+            return self.get_relationship(user, self.to_user)
+        else: 
+            return None
+    
     @staticmethod
     def get_relationship(from_user, to_user):
+        if from_user == to_user:
+            return "SAME"
         rel = Relationship.objects.filter(
             from_user=from_user,
             to_user=to_user
@@ -49,6 +57,8 @@ class Relationship(db.Document):
             if reverse_rel and reverse_rel.rel_type == Relationship.FRIENDS:
                 if reverse_rel.status == Relationship.PENDING:
                     return "REVERSE_FRIENDS_PENDING"
+            elif reverse_rel and reverse_rel.rel_type == Relationship.BLOCKED:
+                return "REVERSE_BLOCKED"
             return None
         
     meta = {
