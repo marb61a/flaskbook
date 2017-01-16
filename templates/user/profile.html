@@ -6,9 +6,9 @@
     {% include "navbar.html" %}
     <div class="row">
         <div class="col-md-3">
-            <img class="img-thumbnail" src="//placehold.it/200x200" width="200" heigh="200" alt="{{ user.username }}">
-            <h3>{{ user.first_name }} {{ user.last_name }} </h3>
-            <h4><a href="{{ url_for('user_app.profile', username=user.username) }}" />@{{ user.username }}</a></h4>
+            <img class="img-thumbnail" src="{{ user.profile_imgsrc('xlg') }}" width="200" height="200" alt="{{ user.username }}">
+            <h3 class="profile-fullname">{{ user.first_name }} {{ user.last_name }}</h3>
+            <h3 class="profile-username"><a href="{{ url_for('user_app.profile', username=user.username) }}" />@{{ user.username }}</a></h3>
         </div>
         <div class="col-md-9">
             <div id="friends-toolbar" class="row">
@@ -46,11 +46,23 @@
                                     <span id="relationship-label">Friendship Requested</span>
                                 </a>
                             {% endif %}
+                            {% if rel == "REVERSE_FRIENDS_PENDING" %}
+                                <a href="{{ url_for('relationship_app.add_friend', to_username=user.username) }}" role="button" id="relationship-reverse-friends-requested" class="btn btn-primary">
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <span id="relationship-label">Accept Friendship</span>
+                                </a>
+                                <a href="{{ url_for('relationship_app.remove_friend', to_username=user.username) }}" role="button" id="relationship-reverse-friends-cancel" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> <span id="relationship-label">Deny Friendship</span>
+                                </a>            
+                            {% endif %}
+                            {% if rel == "REVERSE_BLOCKED" %}
+                                <a href="#" id="relationship-reverse-blocked"></a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
             </div>
             <div class="row">
+                {% if not friend_page %}
                 <div class="col-md-9">
                     <div class="media">
                         <div class="media-left">
@@ -114,7 +126,14 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block end_body_js %}
+    <script type="text/javascript">
+        
+    </script>
 {% endblock %}
