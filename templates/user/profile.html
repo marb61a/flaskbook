@@ -58,37 +58,55 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3"> <!-- Friends side bar -->
                     <h4>
-                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Friends <span class="badge">4</span>
+                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span>  
+                        <a href="{{ url_for('.profile-friends', username=user.username) }}">Friends</a>
+                        <span class="badge">{{ friend_total }}</span>
                     </h4>
+                    {% for friend in friends %}
                     <div class="media">
                         <div class="media-left">
-                            <a href="#">
-                                <img class="media-object" src="//placehold.it/50x50" width="50" heigh="50" alt="{{ user.username }}">
+                            <a class="img-thumnbnail" href="{{ url_for('.profile', username=friend.to_user.username) }}">
+                                <img class="media-object" src="{{ friend.to_user.profile_imgsrc('sm') }}" width="50" height="50" alt="{{ friend.to_user.username }}">
                             </a>     
                         </div>
                         <div class="media-body">
-                            <p>Luis Escobar<br />
-                                <a href="#">@luis</a>
+                            <p>{{ friend.to_user.first_name }}<br />
+                                <a href="{{ url_for('.profile', username=friend.to_user.username) }}">@{{ friend.to_user.username }}</a>
                             </p>
                         </div>
                     </div>
-                    <div class="media">
-                        <div class="media-left">
-                            <a href="#">
-                                <img class="media-object" src="//placehold.it/50x50" width="50" heigh="50" alt="{{ user.username }}">
-                            </a>     
-                        </div>
-                        <div class="media-body">
-                            <p>Luis Escobar<br />
-                                <a href="#">@luis</a>
-                            </p>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
+                {% else %}
+                    <div class="col-md-12"> <!-- == Friend list == -->
+                        <div class="row">
+                            {% for friend in friends.items %}
+                                <div class="col-md-3 friend-grid-user">
+                                    <div class="friend-grid-user-image">
+                                        <a class="img-thumbnail" href="{{ url_for('.profile', username=friend.to_user.username) }}">
+                                            <img src="{{ friend.to_user.profile_imgsrc('lg') }}" width="75" alt="{{ friend.to_user.username }}">
+                                        </a>
+                                    </div>
+                                    <div class="friend-grid-user-data">
+                                        <h4 class="profile-fullname">{{ friend.to_user.first_name }} {{ friend.to_user.last_name }} </h5>
+                                        <h5 class="profile-username"><a href="{{ url_for('.profile', username=friend.to_user.username) }}">@{{ friend.to_user.username }}</a></h4>
+                                    </div>
+                                    <div class="friend-grid-user-friends-button">
+                                        {{ rel_button(friend.is_friend(logged_user), friend.to_user) }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div> <!-- col-md-12 -->
+                    
                 {% endif %}
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block end_body_js %}
+{{ rel_js() }}
 {% endblock %}
