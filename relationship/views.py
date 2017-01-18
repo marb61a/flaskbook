@@ -104,3 +104,23 @@ def block(to_username):
         return redirect(ref)
     else:
         abort(404)
+        
+
+@relationship_app.route('/unblock/<to_username>')
+@login_required
+def unblock(to_username):
+    ref = request.referrer
+    logged_user = User.objects.filter(username=session.get('username')).first()
+    to_user = User.objects.filter(username=to_username).first()
+    
+    if to_user:
+        rel = Relationship.get_relationship(logged_user, to_user)
+        to_username = to_user.username
+        
+        if rel == "BLOCKED":
+            rel = Relationship.objects.filter(
+                from_user=logged_user,
+                to_user=to_user).delete()
+        return redirect(ref)
+    else:
+        abort(404)
