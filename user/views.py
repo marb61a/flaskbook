@@ -3,7 +3,7 @@ import bcrypt
 import uuid
 import os
 from werkzeug import secure_filename
-from feed.forms import FeedPostForm
+from mongoengine import Q
 
 from user.models import User
 from user.forms import RegisterForm, LoginForm, EditForm, ForgotForm, PasswordResetForm
@@ -12,6 +12,8 @@ from settings import UPLOAD_FOLDER
 from utilities.imaging import thumbnail_process
 from relationship.models import Relationship
 from user.decorators import login_required
+from feed.forms import FeedPostForm
+from feed.models import Message
 
 user_app = Blueprint('user_app', __name__)
 
@@ -105,6 +107,11 @@ def profile(username, page=1):
             
             form = FeedPostForm()
             
+            # Get user messages
+            profile_messages = Message.objects.filter(
+                Q(from_user=user) | Q(to_user=user)
+                ).order_by('-create_date')[:10]
+            
             return render_template('user/profile.html',
                 user=user,
                 logged_user=logged_user,
@@ -112,7 +119,8 @@ def profile(username, page=1):
                 friends=friends,
                 friends_total=friends_total,
                 friends_page=friends_page,
-                form=form
+                form = form,
+                profile_messages = profile_messages
                 )
     else:
         abort(404)
