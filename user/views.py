@@ -212,7 +212,7 @@ def forgot():
         message = "You will receive a password reset email if we find that email in our system"
     return render_template('user/forgot.html', form=form, error=error, message=message)
     
-@user_app.route('password_reset/<username>/<code>', methods=('GET', 'POST'))
+@user_app.route('/password_reset/<username>/<code>', methods=('GET', 'POST'))
 def password_reset(username, code):
     message = None
     require_current = None
