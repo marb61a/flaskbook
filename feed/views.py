@@ -4,7 +4,7 @@ import os
 
 from user.decorators import login_required
 from user.models import User
-from feed.models import Message, Feed, POST, COMMENT
+from feed.models import Message, Feed, POST, COMMENT, LIKE
 from feed.process import process_message
 from feed.forms import FeedPostForm
 from settings import UPLOAD_FOLDER
@@ -96,8 +96,41 @@ def message(message_id):
             parent = message_id
             ).save()
         
-        return render_template('feed/message.html',
-            message = message,
-            form = form
-        )
-            
+        return redirect(url_for('feed_app.message', message_id = message.id))
+        
+    return render_template('feed/message.html',
+        message = message,
+        form = form
+    )
+
+@feed_app.route('/like/<message_id>', methods=('GET', 'POST'))
+@login_required
+def like_message(message_id):
+    message = None
+    
+    message = Message.objects.filter(id = message_id).first()
+    if not message:
+        abort(404)
+    
+    if message and message.parent:
+        abort(404)
+    
+    from_user = User.objects.get(username=session.get('username'))
+    
+    # Check if first like
+    existing_like = Message.objects.filter(
+        parent = message_id,
+        message_type = LIKE,
+        from_user = from_user
+        ).count()
+    
+    if not existing_like:
+        # Write the like
+        like = Message(
+            from_user = from_user,
+            to_user = message.from_user,
+            message_type = LIKE,
+            parent = message_id
+            ).save()
+    
+    return redirect(url_for('feed_app.message', message_id = message.id))

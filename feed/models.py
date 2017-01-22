@@ -28,7 +28,6 @@ class Message(db.Document):
     images = db.ListField(db_field="ii")
     message_type = db.IntField(db_field='mt', default=POST, choices=MESSAGE_TYPE)
     
-    
     @property
     def text_linkified(self):
         return linkify(self.text)
@@ -36,6 +35,14 @@ class Message(db.Document):
     @property
     def human_timestamp(self):
         return ms_stamp_humanize(self.create_date)
+    
+    @property
+    def comments(self):
+        return Message.objects.filter(parent=self.id, message_type=COMMENT).order_by('create_date')
+
+    @property
+    def likes(self):
+        return Message.objects.filter(parent=self.id, message_type=LIKE).order_by('-create_date')
         
     def post_imgsrc(self, image_ts, size):
         if AWS_BUCKET:
