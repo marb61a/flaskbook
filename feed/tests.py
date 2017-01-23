@@ -54,3 +54,51 @@ class RelationshipTest(unittest.TestCase):
             confirm="abcd1234"
             )
     
+    def test_feed_posts(self):
+        # Register the first user
+        rv = self.app.post('/register', data = self.user1_dict(), follow_redirects = True)
+        
+        # Login the first user
+        rv = self.app.post('/login', data=dict(
+            username = self.user1_dict()['username'],
+            password = self.user1_dict()['password']
+            ))
+        
+        # Post a message
+        rv = self.app.post('/message/add', data = dict(
+            post="Test Post #1 User 1",
+            to_user = self.user1_dict()['username']
+            ), follow_redirects = True)
+        assert "Test Post #1 User 1" in str(rv.data)
+        
+        # Register second user 
+        rv = self.app.post('/register', data=self.user2_dict(), follow_redirects = True)
+        
+        # Make friends with user2
+        rv = self.app.get('/add_friend/' + self.user2_dict()['username'], follow_redirects = True)
+        
+        # Login user2 and confirm user1 as friend
+        rv = self.app.post('/login', data=dict(
+            username = self.user2_dict()['username'],
+            password = self.user2_dict()['password']
+            ))
+        rv = self.app.get('/add_friend/' + self.user1_dict()['username'], follow_redirects = True)
+        
+        # Login the first user again
+        rv = self.app.post('/login', data=dict(
+            username = self.user1_dict()['username'],
+            password = self.user1_dict()['password']
+            ))
+        
+        # Post a message
+        rv = self.app.post('/message/add', data = dict(
+            post = "Test Post #2 User 1",
+            to_user = self.user1_dict()['username']
+            ), follow_redirects = True)
+        assert "Test Post #2 User 1" in str(rv.data)
+        
+        # Post a message to user 2
+        rv = self.app.post('/message/add', data=dict(
+            post="Test Post User 1 to User 2",
+            to_user = self.user1_dict()['username']
+            ), follow_redirects = True)
