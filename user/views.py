@@ -42,7 +42,7 @@ def register():
         email(user.email, "Welcome to Flaskbook", body_html, body_text)
         
         user.save()
-        return "User Registered"
+        returnredirect(url_for('home_app.home'))
     return render_template('user/register.html', form=form)
     
 @user_app.route('/login', methods=('GET','POST'))
@@ -65,7 +65,7 @@ def login():
                 session.pop('next')
                 return redirect(next)
             else:
-                return 'User logged in'
+                return redirect(url_for('home_app.home'))
         else:
             user = None
         if not user:
@@ -79,8 +79,8 @@ def logout():
 
 @user_app.route('/<username>/friends/<int:page>', endpoint='profile-friends-page')
 @user_app.route('/<username>/friends', endpoint='profile-friends')
-@user_app.route('/<username>', methods=('GET','POST'))
-def profile(username, page=1):
+@user_app.route('/<username>')
+def profile(username, friends_page_number=1):
     logged_user = None
     rel = None
     friends_page = None
@@ -176,7 +176,7 @@ def edit():
                 if not message:
                     message = "Profile Updated"
                     
-        return render_template("user/edit.html", form=form, error=error, message=message)        
+        return render_template("user/edit.html", form=form, error = error, message = message, user = user)        
     else:
         abort(404)
 
