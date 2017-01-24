@@ -6,7 +6,7 @@ from flask import session
 from user.models import User
 from relationship.models import Relationship
 
-class RelationshipTest(unittest.TestCase):
+class FeedTest(unittest.TestCase):
     def create_app(self):
         self.db_name = 'flaskbook_test'
         return create_app_base(
@@ -102,3 +102,52 @@ class RelationshipTest(unittest.TestCase):
             post="Test Post User 1 to User 2",
             to_user = self.user1_dict()['username']
             ), follow_redirects = True)
+        
+        # Login user2 
+        rv = self.app.post('/login', data = dict(
+            username = self.user2_dict()['username'],
+            password = self.user2_dict()['password']
+            ))
+        rv = self.app.get('/')
+        assert "Test Post #2 User 1" in str(rv.data)
+        assert "Test Post User 1 to User 2" in str(rv.data)
+        
+        # Register third user 
+        rv = self.app.post('/register', data=self.user3_dict(), follow_redirects = True)
+        
+        # Make friends with User2
+        rv = self.app.get('/add_friend/' + self.user2_dict()['username'], follow_redirects = True)
+        
+        # Login the first user 
+        rv = self.app.post('/login', data=dict(
+            username = self.user1_dict()['username'],
+            password = self.user1_dict()['password']
+            ))
+        
+        # Block User3
+        rv = self.app.get('/block/' + self.user3_dict()['username'], follow_redirects = True)
+        
+        # Login user2 
+        rv = self.app.post('/login', data = dict(
+            username = self.user2_dict()['username'],
+            password = self.user2_dict()['password']
+            ))
+        
+        # User2 confirm friend User3
+        rv = self.app.get('/add_friend/' + self.user3_dict()['username'], follow_redirects = True)
+        
+        # Post a message to User3
+        rv = self.app.post('/message/add', data=dict(
+            post="Test Post User 2 to User 3",
+            to_user = self.user3_dict()['username']
+            ), follow_redirects = True)
+        
+        # Login the first user 
+        rv = self.app.post('/login', data=dict(
+            username = self.user1_dict()['username'],
+            password = self.user1_dict()['password']
+            ))
+        
+        # Check User1 doesn't see User2's post to User3 (blocked)
+        rv = self.app.get('/')
+        assert "Test Post User 2 to User 3" not in str(rv.data)

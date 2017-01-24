@@ -12,7 +12,7 @@ class UserTest(unittest.TestCase):
             MONGODB_SETTINGS={'DB': self.db_name},
             TESTING=True,
             WTF_CSRF_ENABLED=False,
-            SECRET_KEY=''
+            SECRET_KEY='ABCD1234'
             )
             
     def setUp(self):

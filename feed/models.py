@@ -60,5 +60,5 @@ class Feed(db.Document):
     create_date = db.IntField(db_field="c", default=now())
     
     meta = {
-        'indexes': [('user', 'parent', '-create_date')]
+        'indexes': [('user', '-create_date')]
     }
