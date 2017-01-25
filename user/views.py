@@ -42,7 +42,7 @@ def register():
         email(user.email, "Welcome to Flaskbook", body_html, body_text)
         
         user.save()
-        returnredirect(url_for('home_app.home'))
+        return redirect(url_for('home_app.home'))
     return render_template('user/register.html', form=form)
     
 @user_app.route('/login', methods=('GET','POST'))

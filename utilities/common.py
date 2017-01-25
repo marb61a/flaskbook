@@ -26,7 +26,7 @@ def email(to_email, subject, body_html, body_text):
     
     client = boto3.client('ses')
     return client.send_email(
-        Source='',
+        Source='joebloggs@example.com',
         Destination={
             'ToAddresses':[
                 to_email,    
